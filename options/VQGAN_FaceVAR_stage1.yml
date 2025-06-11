@@ -16,13 +16,31 @@ datasets:
     in_size: 256
     gt_size: 256
     # data loader
-    num_worker_per_gpu: 4
+    num_worker_per_gpu: 0
     batch_size_per_gpu: 1
     dataset_enlarge_ratio: 1
 
     prefetch_mode: cpu
     num_prefetch_queue: 1
-    
+  
+  val:
+    name: facevar
+    type: FaceVarDataset
+    lq_folder: /mmlabworkspace_new/WorkSpaces/ngaptb/khanhnhm/khanhngo/VideoRestoration/VideoRestoration/dataset/TalkingHead/new_data/degradation/degraded_images
+    gt_folder: /mmlabworkspace_new/WorkSpaces/ngaptb/khanhnhm/khanhngo/VideoRestoration/VideoRestoration/dataset/TalkingHead/new_data/degradation/images
+    split_file: /mmlabworkspace_new/WorkSpaces/ngaptb/HumanActionMimic/STERRGAN/BFVR-STC/data/test_list.txt
+    component_file: /mmlabworkspace_new/WorkSpaces/ngaptb/khanhnhm/khanhngo/VideoRestoration/VideoRestoration/STERR-GAN/data/test_video.json
+    in_size: 256
+    gt_size: 256
+    # data loader
+    num_worker_per_gpu: 0
+    batch_size_per_gpu: 1
+    dataset_enlarge_ratio: 1
+
+    prefetch_mode: cpu
+    num_prefetch_queue: 1
+
+
 # network structures
 network_g:
   type: VQAutoEncoder3D
@@ -31,6 +49,8 @@ network_g:
   ch_mult: [1, 2, 4, 8]
   quantizer: 'nearest'
   codebook_size: 1024
+  model_path: "/mmlabworkspace_new/WorkSpaces/ngaptb/HumanActionMimic/STERRGAN/BFVR-STC/weights/STC/ckpt-bfvr.pth"
+  stage: 1
 
 network_d:
   type: VQGANDiscriminator3D
@@ -92,7 +112,7 @@ train:
 
 # validation settings
 val:
-  val_freq: !!float 5e10 # no validation
+  val_freq: !!float 10000 # no validation
   save_img: true
 
   metrics:
@@ -104,7 +124,7 @@ val:
 # logging settings
 logger:
   print_freq: 1
-  save_checkpoint_freq: !!float 50000
+  save_checkpoint_freq: !!float 10000
   use_tb_logger: true
   wandb:
     project: ~

@@ -26,12 +26,12 @@ def read_in_video_tensor(video_path):
     while cap.isOpened():
         ret_flag, image = cap.read()
         if ret_flag == True:
-            image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_LINEAR)
+            image = cv2.resize(image, (512, 512), interpolation=cv2.INTER_LINEAR)
             img_gt_list.append(image)
             image = img2tensor_np(image, bgr2rgb=True, float32=True)
             img_in_list.append(image)
             cnt = cnt + 1
-            if cnt == 24:
+            if cnt == 16:
                 break
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
@@ -113,8 +113,8 @@ if __name__ == "__main__":
     #     progress=True,
     #     file_name=None,
     # )
-
-    ckpt_path = "experiments/20250603_095215_stage2_wo_noise/models/net_g_50000.pth"
+    ckpt_path = 'weights/STC/ckpt-bfvr.pth'
+    # ckpt_path = "experiments/20250611_094133_stage2_wo_noise/models/net_g_50000.pth"
     model = ARCH_REGISTRY.get("CodeFormer3D")(n_head=2, n_layers=9).to(device)
     checkpoint = torch.load(ckpt_path)["params_ema"]
 
@@ -122,3 +122,6 @@ if __name__ == "__main__":
     model.eval()
 
     f(test_path, device, model, args.output_base)
+    
+    
+    

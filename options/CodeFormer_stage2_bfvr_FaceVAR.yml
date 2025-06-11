@@ -64,7 +64,7 @@ network_g:
   codebook_size: 1024
   connect_list: ['32', '64', '128', '256']
   fix_modules: ['quantize','generator']
-  vqgan_path: experiments/20250531_164528_stage1/models/net_g_50000.pth # pretrained VQGAN 
+  vqgan_path: experiments/20250610_164131_stage1/models/net_g_50000.pth # pretrained VQGAN 
 
 network_vqgan: # this config is needed if no pre-calculated latent
   type: VQAutoEncoder3D
@@ -73,7 +73,7 @@ network_vqgan: # this config is needed if no pre-calculated latent
   ch_mult: [1, 2, 4, 8]
   quantizer: 'nearest'
   codebook_size: 1024
-  model_path: experiments/20250531_164528_stage1/models/net_g_50000.pth # pretrained VQGAN 
+  model_path: experiments/20250610_164131_stage1/models/net_g_50000.pth # pretrained VQGAN 
 
 # path
 path:
