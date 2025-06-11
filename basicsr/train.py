@@ -253,6 +253,9 @@ def train_pipeline(root_path):
             if current_iter % opt["logger"]["save_checkpoint_freq"] == 0:
                 logger.info("Saving models and training states.")
                 model.save(epoch, current_iter)
+            
+            if current_iter % opt["val"]["val_freq"] == 0:
+                model.validation(val_loader, current_iter, tb_logger, opt["val"]["save_img"])
 
             data_time = time.time()
             iter_time = time.time()

@@ -212,12 +212,12 @@ class VQGANModel(SRModel):
         with torch.no_grad():
             if hasattr(self, "net_g_ema"):
                 self.net_g_ema.eval()
-                self.output, _, _ = self.net_g_ema(self.gt)
+                self.output, _, _, _ = self.net_g_ema(self.gt)
             else:
                 logger = get_root_logger()
                 logger.warning("Do not have self.net_g_ema, use self.net_g.")
                 self.net_g.eval()
-                self.output, _, _ = self.net_g(self.gt)
+                self.output, _, _, _ = self.net_g(self.gt)
                 self.net_g.train()
 
     def dist_validation(self, dataloader, current_iter, tb_logger, save_img):
@@ -234,18 +234,20 @@ class VQGANModel(SRModel):
         pbar = tqdm(total=len(dataloader), unit="image")
 
         for idx, val_data in enumerate(dataloader):
-            img_name = osp.splitext(osp.basename(val_data["lq_path"][0]))[0]
+            img_name = osp.splitext(osp.basename(val_data["gt_path"][0]))[0]
             self.feed_data(val_data)
             self.test()
 
             visuals = self.get_current_visuals()
-            sr_img = tensor2img([visuals["result"]])
+            sr_img = tensor2img(visuals["result"][0,:,0,:,:])
             if "gt" in visuals:
-                gt_img = tensor2img([visuals["gt"]])
+                gt_img = tensor2img(visuals["gt"][0,:,0,:,:])
                 del self.gt
 
             # tentative for out of GPU memory
-            del self.lq
+            
+            if hasattr(self, 'lq'):
+                del self.lq
             del self.output
             torch.cuda.empty_cache()
 

@@ -20,5 +20,8 @@ PYTHONPATH='./' CUDA_VISIBLE_DEVICES=0 nohup python basicsr/train.py -opt option
 
 
 
-CUDA_VISIBLE_DEVICES=0 python scripts/infer_bfvr.py --input_path input.mp4 --output_base .
-CUDA_VISIBLE_DEVICES=0 python scripts/infer_bfvr.py --input_path input2.mp4 --output_base .
+CUDA_VISIBLE_DEVICES=0 python scripts/infer_bfvr.py --input_path input.mp4 --output_base ./results/
+CUDA_VISIBLE_DEVICES=0 python scripts/infer_bfvr.py --input_path input2.mp4 --output_base ./results/
+
+CUDA_VISIBLE_DEVICES=0 python scripts/infer_bfvr.py --input_path 1-3-1.avi --output_base ./results/
+

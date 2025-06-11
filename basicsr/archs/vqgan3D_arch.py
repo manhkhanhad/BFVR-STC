@@ -518,6 +518,7 @@ class VQAutoEncoder3D(nn.Module):
         gumbel_straight_through=False,
         gumbel_kl_weight=1e-8,
         model_path=None,
+        stage=None,
     ):  
         super().__init__()
         logger = get_root_logger()
@@ -554,18 +555,26 @@ class VQAutoEncoder3D(nn.Module):
 
         if model_path is not None:
             chkpt = torch.load(model_path, map_location="cpu")
-            if "params_ema" in chkpt:
-                self.load_state_dict(
-                    torch.load(model_path, map_location="cpu")["params_ema"]
-                )
+            if stage == 1:
+                new_state_dict = {}
+                for k, v in chkpt["params_ema"].items():
+                    if k.startswith("generator") or k.startswith("encoder") or k.startswith("quantize"):
+                        new_state_dict[k] = v
+                self.load_state_dict(new_state_dict)
                 logger.info(f"vqgan is loaded from: {model_path} [params_ema]")
-            elif "params" in chkpt:
-                self.load_state_dict(
-                    torch.load(model_path, map_location="cpu")["params"]
-                )
-                logger.info(f"vqgan is loaded from: {model_path} [params]")
             else:
-                raise ValueError(f"Wrong params!")
+                if "params_ema" in chkpt:
+                    self.load_state_dict(
+                        torch.load(model_path, map_location="cpu")["params_ema"]
+                    )
+                    logger.info(f"vqgan is loaded from: {model_path} [params_ema]")
+                elif "params" in chkpt:
+                    self.load_state_dict(
+                        torch.load(model_path, map_location="cpu")["params"]
+                    )
+                    logger.info(f"vqgan is loaded from: {model_path} [params]")
+                else:
+                    raise ValueError(f"Wrong params!")
 
     def forward(self, x):
         x = self.encoder(x)

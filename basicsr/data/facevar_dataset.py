@@ -42,7 +42,7 @@ import glob
 class FaceVarDataset(data.Dataset):
     def __init__(self, opt):
         super(FaceVarDataset, self).__init__()
-        logger = get_root_logger()
+        self.logger = get_root_logger()
         self.opt = opt
         # file client (io backend)
         self.file_client = None
@@ -108,6 +108,7 @@ class FaceVarDataset(data.Dataset):
             (int(self.in_size), int(self.in_size)),
             interpolation=cv2.INTER_LINEAR,
         )
+        frame = img2tensor_np(frame, bgr2rgb=True, float32=True)
         return frame
 
     def __getitem__(self, index):
@@ -115,25 +116,32 @@ class FaceVarDataset(data.Dataset):
         lq_path, gt_path = self.paths[index]
         name = osp.basename(lq_path)
         n_frame = self.n_frame
-        img_gt_list = []
-        img_lq_list = []
+        
         lq_sequences = sorted(glob.glob(osp.join(lq_path, '*')))
         frames_list = [osp.basename(frame_path) for frame_path in lq_sequences]
         n_all = len(frames_list)
-        start_idx = random.randint(0, n_all - n_frame)
 
-        slected_frames = frames_list[start_idx : start_idx + n_frame]
-        for frame_name in slected_frames:
-            lq_frame_path = osp.join(lq_path, frame_name)
-            gt_frame_path = osp.join(gt_path, frame_name)
-            if not osp.exists(lq_frame_path):
-                raise ValueError(f"LQ frame {lq_frame_path} not found")
-            if not osp.exists(gt_frame_path):
-                raise ValueError(f"GT frame {gt_frame_path} not found")
-            lq_frame = cv2.imread(lq_frame_path)
-            gt_frame = cv2.imread(gt_frame_path)
-            img_lq_list.append(self.process_frame(lq_frame))
-            img_gt_list.append(self.process_frame(gt_frame))
+        while True:
+            try:
+                img_gt_list = []
+                img_lq_list = []
+                start_idx = random.randint(0, n_all - n_frame)
+                slected_frames = frames_list[start_idx : start_idx + n_frame]
+                for frame_name in slected_frames[:n_frame]:
+                    lq_frame_path = osp.join(lq_path, frame_name)
+                    gt_frame_path = osp.join(gt_path, frame_name)
+                    if not osp.exists(lq_frame_path):
+                        raise ValueError(f"LQ frame {lq_frame_path} not found")
+                    if not osp.exists(gt_frame_path):
+                        raise ValueError(f"GT frame {gt_frame_path} not found")
+                    lq_frame = cv2.imread(lq_frame_path)
+                    gt_frame = cv2.imread(gt_frame_path)
+                    img_lq_list.append(self.process_frame(lq_frame))
+                    img_gt_list.append(self.process_frame(gt_frame))
+                break
+            except:
+                self.logger.error(f"Error processing {lq_frame_path}")
+
         
         img_lq_np = np.array(img_lq_list)
         img_gt_np = np.array(img_gt_list)
@@ -144,6 +152,7 @@ class FaceVarDataset(data.Dataset):
         img_lq = img_lq_np.transpose(3, 0, 1, 2)
         img_gt = img_gt_np.transpose(3, 0, 1, 2)
 
+        self.logger.info(f"img_lq.shape: {img_lq.shape} img_gt.shape: {img_gt.shape} name: {name} n_frame: {n_frame}")
         return_dict = {"in": img_lq, "gt": img_gt, "gt_path": gt_path}
         return return_dict
 
