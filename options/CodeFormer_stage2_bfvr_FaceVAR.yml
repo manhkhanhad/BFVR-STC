@@ -9,16 +9,16 @@ datasets:
   train:
     name: facevar
     type: FaceVarDataset
-    lq_folder: /mmlabworkspace_new/WorkSpaces/ngaptb/khanhnhm/khanhngo/VideoRestoration/VideoRestoration/dataset/TalkingHead/new_data/degradation/degraded_images
-    gt_folder: /mmlabworkspace_new/WorkSpaces/ngaptb/khanhnhm/khanhngo/VideoRestoration/VideoRestoration/dataset/TalkingHead/new_data/degradation/images
-    split_file: /mmlabworkspace_new/WorkSpaces/ngaptb/HumanActionMimic/STERRGAN/BFVR-STC/data/train_list.txt
-    component_file: /mmlabworkspace_new/WorkSpaces/ngaptb/khanhnhm/khanhngo/VideoRestoration/VideoRestoration/STERR-GAN/data/train_video.json
+    lq_folder: /data/mmlab/nga2/dataset/degraded_images
+    gt_folder: /data/mmlab/nga2/dataset/images
+    split_file: /data/mmlab/nga2/dataset/train_list.txt
+    component_file: /data/mmlab/nga2/dataset/train_video.json
 
     io_backend:
       type: disk
 
-    in_size: 256
-    gt_size: 256 
+    in_size: 512
+    gt_size: 512 
     # mean: [0.5, 0.5, 0.5]
     # std: [0.5, 0.5, 0.5]
     use_hflip: true
@@ -49,10 +49,28 @@ datasets:
     latent_gt_path: ~ # without pre-calculated latent code
 
     # data loader
-    num_worker_per_gpu: 1
+    num_worker_per_gpu: 0
     batch_size_per_gpu: 1
     dataset_enlarge_ratio: 1
     prefetch_mode: ~
+  
+  val:
+    name: facevar
+    type: FaceVarDatasetTest
+    lq_folder: /data/mmlab/nga2/dataset/degraded_images
+    gt_folder: /data/mmlab/nga2/dataset/images
+    split_file: /data/mmlab/nga2/dataset/test_list.txt
+    component_file: /data/mmlab/nga2/dataset/test_video.json
+
+    io_backend:
+      type: disk
+
+    in_size: 512
+    gt_size: 512 
+    # mean: [0.5, 0.5, 0.5]
+    # std: [0.5, 0.5, 0.5]
+    use_hflip: true
+    use_corrupt: true
 
     
 # network structures
@@ -64,16 +82,16 @@ network_g:
   codebook_size: 1024
   connect_list: ['32', '64', '128', '256']
   fix_modules: ['quantize','generator']
-  vqgan_path: experiments/20250610_164131_stage1/models/net_g_50000.pth # pretrained VQGAN 
+  vqgan_path: experiments_old/20250610_164131_stage1/models/net_g_30000.pth # pretrained VQGAN 
 
 network_vqgan: # this config is needed if no pre-calculated latent
   type: VQAutoEncoder3D
-  img_size: 256
+  img_size: 512
   nf: 32
   ch_mult: [1, 2, 4, 8]
   quantizer: 'nearest'
   codebook_size: 1024
-  model_path: experiments/20250610_164131_stage1/models/net_g_50000.pth # pretrained VQGAN 
+  model_path: experiments_old/20250610_164131_stage1/models/net_g_30000.pth # pretrained VQGAN 
 
 # path
 path:
@@ -103,7 +121,7 @@ train:
     milestones: [20000, 35000]
     gamma: 0.5
 
-  total_iter: 50000
+  total_iter: 500000
 
   warmup_iter: -1  # no warm up
   ema_decay: 0.995
@@ -117,8 +135,9 @@ train:
 
 # validation settings
 val:
-  val_freq: !!float 5e10 # no validation
+  val_freq: 10000 # no validation
   save_img: true
+  suffix: "test"
 
   metrics:
     psnr: # metric name, can be arbitrary

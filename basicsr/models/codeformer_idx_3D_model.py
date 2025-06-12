@@ -190,6 +190,7 @@ class CodeFormerIdx3DModel(SRModel):
 
         for idx, val_data in enumerate(dataloader):
             img_name = osp.splitext(osp.basename(val_data["gt_path"][0]))[0]
+            frames_name = val_data["frames_name"][0].split("|")
             self.feed_data(val_data)
             self.test()
 
@@ -213,19 +214,21 @@ class CodeFormerIdx3DModel(SRModel):
                         f"{img_name}_{current_iter}.png",
                     )
                 else:
-                    if self.opt["val"]["suffix"]:
-                        save_img_path = osp.join(
-                            self.opt["path"]["visualization"],
-                            dataset_name,
-                            f'{img_name}_{self.opt["val"]["suffix"]}.png',
-                        )
-                    else:
-                        save_img_path = osp.join(
-                            self.opt["path"]["visualization"],
-                            dataset_name,
-                            f'{img_name}_{self.opt["name"]}.png',
-                        )
-                imwrite(sr_img, save_img_path)
+                    for i in range(len(frames_name)):
+                        sr_img = tensor2img(visuals["result"][0,:,i,:,:])
+                        if self.opt["val"]["suffix"]:
+                            save_img_path = osp.join(
+                                self.opt["path"]["visualization"],
+                                dataset_name,
+                                f'{self.opt["val"]["suffix"]}_{img_name}/{frames_name[i]}.png',
+                            )
+                        else:
+                            save_img_path = osp.join(
+                                self.opt["path"]["visualization"],
+                                dataset_name,
+                                f'{self.opt["name"]}_{img_name}/{frames_name[i]}.png',
+                            )
+                        imwrite(sr_img, save_img_path)
 
             if with_metrics:
                 # calculate metrics
